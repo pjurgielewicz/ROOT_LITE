@@ -21,6 +21,7 @@
 #include "THistPainter.h"
 #include "TH2.h"
 #include "TH2Poly.h"
+#include "TH2PolyLite.h"
 #include "TH3.h"
 #include "TProfile.h"
 #include "TProfile2D.h"
@@ -3168,8 +3169,8 @@ Int_t THistPainter::DistancetoPrimitive(Int_t px, Int_t py)
 
    //     if object is 2D or 3D return this object
    if (fH->GetDimension() == 2) {
-      if (fH->InheritsFrom(TH2Poly::Class())) {
-         TH2Poly *th2 = (TH2Poly*)fH;
+      if (fH->InheritsFrom(TH2Poly::Class()) || fH->InheritsFrom(TH2PolyLite::Class())) {
+         //TH2Poly *th2 = ((fH->InheritsFrom(TH2Poly::Class())) ? (TH2Poly*)fH : (TH2PolyLite*)fH);
          Double_t xmin, ymin, xmax, ymax;
          gPad->GetRangeAxis(xmin, ymin, xmax, ymax);
          Double_t pxu = gPad->AbsPixeltoX(px);
@@ -3178,7 +3179,7 @@ Int_t THistPainter::DistancetoPrimitive(Int_t px, Int_t py)
             curdist = big;
             goto FUNCTIONS;
          } else {
-            Int_t bin = th2->FindBin(pxu, pyu);
+            Int_t bin = ((fH->InheritsFrom(TH2Poly::Class())) ? (TH2Poly*)fH : (TH2PolyLite*)fH)->FindBin(pxu, pyu);//th2->FindBin(pxu, pyu);
             if (bin>0) curdist = 1;
             else       curdist = big;
             goto FUNCTIONS;
@@ -3635,6 +3636,12 @@ char *THistPainter::GetObjectInfo(Int_t px, Int_t py) const
          snprintf(info,200,"%s (x=%g, y=%g, bin=%d, binc=%g)",
                   th2->GetBinTitle(biny),x,y,biny,th2->GetBinContent(biny));
       }
+      else if (fH->InheritsFrom(TH2PolyLite::Class())) {
+          TH2PolyLite *th2 = (TH2PolyLite*)fH;
+          biny = th2->FindBin(x,y);
+          snprintf(info,200,"BIN_ID=%g (x=%g, y=%g, bin=%d, binc=%g)",
+                   biny,x,y,biny,th2->GetBinContent(biny));
+      }
       else if (fH->InheritsFrom(TProfile2D::Class())) {
          TProfile2D *tp = (TProfile2D*)fH;
          biny = fYaxis->FindFixBin(y);
@@ -3955,7 +3962,7 @@ Int_t THistPainter::MakeChopt(Option_t *choptin)
       }
       strncpy(l,"    ", 4);
       l = strstr(chopt,"N");
-      if (l && fH->InheritsFrom(TH2Poly::Class())) Hoption.Text += 3000;
+      if (l && (fH->InheritsFrom(TH2Poly::Class()) || fH->InheritsFrom(TH2PolyLite::Class()))) Hoption.Text += 3000;
       Hoption.Scat = 0;
    }
    l = strstr(chopt,"POL");  if (l) { Hoption.System = kPOLAR;       strncpy(l,"   ",3); }
@@ -4007,7 +4014,7 @@ Int_t THistPainter::MakeChopt(Option_t *choptin)
    if (strstr(chopt,"H"))   Hoption.Hist =2;
    if (strstr(chopt,"P0"))  Hoption.Mark =10;
 
-   if (fH->InheritsFrom(TH2Poly::Class())) {
+   if (fH->InheritsFrom(TH2Poly::Class()) || fH->InheritsFrom(TH2PolyLite::Class())) {
       if (Hoption.Fill+Hoption.Line+Hoption.Mark != 0 ) Hoption.Scat = 0;
    }
 
@@ -9195,7 +9202,8 @@ void THistPainter::PaintTable(Option_t *option)
 
    // Draw the histogram according to the option
    } else {
-      if (fH->InheritsFrom(TH2Poly::Class())) {
+      if (fH->InheritsFrom(TH2Poly::Class()) ||
+          fH->InheritsFrom(TH2PolyLite::Class())) {
          if (Hoption.Fill)         PaintTH2PolyBins("f");
          if (Hoption.Color)        PaintTH2PolyColorLevels(option);
          if (Hoption.Scat)         PaintTH2PolyScatterPlot(option);
@@ -9269,25 +9277,24 @@ void THistPainter::PaintTH2PolyBins(Option_t *option)
    if (opt.Contains("f")) fill = kTRUE;
    if (opt.Contains("p")) mark = kTRUE;
 
-   TH2PolyBin  *b;
-   Double_t z;
+    Double_t z;
+    TObject *poly;
 
-   TIter next(((TH2Poly*)fH)->GetBins());
-   TObject *obj, *poly;
+	PolyBinIterator it(fH);
 
-   while ((obj=next())) {
-      b = (TH2PolyBin*)obj;
-      z = b->GetContent();
-      if (z==0 && Hoption.Zero) continue; // Do not draw empty bins in case of option "COL0 L"
-      poly  = b->GetPolygon();
+    while (it->Next(poly, z)) {
+        //b = (TH2PolyBin*)obj;
+        //z = b->GetContent();
+        if (z==0 && Hoption.Zero) continue; // Do not draw empty bins in case of option "COL0 L"
+        //poly  = b->GetPolygon();
 
-      // Paint the TGraph bins.
-      if (poly->IsA() == TGraph::Class()) {
-         TGraph *g  = (TGraph*)poly;
-         g->TAttLine::Modify();
-         g->TAttMarker::Modify();
-         g->TAttFill::Modify();
-         if (line) {
+        // Paint the TGraph bins.
+        if (poly->IsA() == TGraph::Class()) {
+            TGraph *g  = (TGraph*)poly;
+            g->TAttLine::Modify();
+            g->TAttMarker::Modify();
+            g->TAttFill::Modify();
+            if (line) {
             Int_t fs = g->GetFillStyle();
             Int_t fc = g->GetFillColor();
             g->SetFillStyle(0);
@@ -9295,36 +9302,36 @@ void THistPainter::PaintTH2PolyBins(Option_t *option)
             g->Paint("F");
             g->SetFillStyle(fs);
             g->SetFillColor(fc);
-         }
-         if (fill) g->Paint("F");
-         if (mark) g->Paint("P");
-      }
+            }
+            if (fill) g->Paint("F");
+            if (mark) g->Paint("P");
+        }
 
-      // Paint the TMultiGraph bins.
-      if (poly->IsA() == TMultiGraph::Class()) {
-         TMultiGraph *mg = (TMultiGraph*)poly;
-         TList *gl = mg->GetListOfGraphs();
-         if (!gl) return;
-         TGraph *g;
-         TIter nextg(gl);
-         while ((g = (TGraph*) nextg())) {
+        // Paint the TMultiGraph bins.
+        if (poly->IsA() == TMultiGraph::Class()) {
+            TMultiGraph *mg = (TMultiGraph*)poly;
+            TList *gl = mg->GetListOfGraphs();
+            if (!gl) return;
+            TGraph *g;
+            TIter nextg(gl);
+            while ((g = (TGraph*) nextg())) {
             g->TAttLine::Modify();
             g->TAttMarker::Modify();
             g->TAttFill::Modify();
             if (line) {
-               Int_t fs = g->GetFillStyle();
-               Int_t fc = g->GetFillColor();
-               g->SetFillStyle(0);
-               g->SetFillColor(g->GetLineColor());
-               g->Paint("F");
-               g->SetFillStyle(fs);
-               g->SetFillColor(fc);
+                Int_t fs = g->GetFillStyle();
+                Int_t fc = g->GetFillColor();
+                g->SetFillStyle(0);
+                g->SetFillColor(g->GetLineColor());
+                g->Paint("F");
+                g->SetFillStyle(fs);
+                g->SetFillColor(fc);
             }
             if (fill) g->Paint("F");
             if (mark) g->Paint("P");
-         }
-      }
-   }
+            }
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -9363,16 +9370,10 @@ void THistPainter::PaintTH2PolyColorLevels(Option_t *)
    if (fH->TestBit(TH1::kUserContour) == 0) fH->SetContour(ndiv);
    Double_t scale = ndivz/dz;
 
-   TH2PolyBin  *b;
+   TObject *poly;
+   PolyBinIterator it(fH);
 
-   TIter next(((TH2Poly*)fH)->GetBins());
-   TObject *obj, *poly;
-
-   while ((obj=next())) {
-      b     = (TH2PolyBin*)obj;
-      poly  = b->GetPolygon();
-
-      z = b->GetContent();
+   while (it->Next(poly, z)) {
       if (z==0 && Hoption.Zero) continue;
       if (Hoption.Logz) {
          if (z > 0) z = TMath::Log10(z);
@@ -9457,24 +9458,26 @@ void THistPainter::PaintTH2PolyScatterPlot(Option_t *)
    // to get same random numbers when drawing the same histogram
    TRandom2 random;
 
-   TH2PolyBin  *b;
+   //TH2PolyBin  *b;
 
-   TIter next(((TH2Poly*)fH)->GetBins());
-   TObject *obj, *poly;
+   //TIter next(((TH2Poly*)fH)->GetBins());
+   TObject *poly;
+
+   PolyBinIterator it(fH);							
 
    Double_t maxarea = 0, a;
-   while ((obj=next())) {
-      b     = (TH2PolyBin*)obj;
-      a     = b->GetArea();
+   while (it->Next(poly, z)) {
+      a = it->GetArea();
       if (a>maxarea) maxarea = a;
    }
 
-   next.Reset();
+   //next.Reset();
+   it.Reset();
 
-   while ((obj=next())) {
-      b     = (TH2PolyBin*)obj;
-      poly  = b->GetPolygon();
-      z     = b->GetContent();
+   while (it->Next(poly, z)) {
+      //b     = (TH2PolyBin*)obj;
+      //poly  = b->GetPolygon();
+      //z     = b->GetContent();
       if (z < zmin) z = zmin;
       if (z > zmax) z = zmax;
       if (Hoption.Logz) {
@@ -9482,11 +9485,11 @@ void THistPainter::PaintTH2PolyScatterPlot(Option_t *)
       } else {
          z    -=  zmin;
       }
-      k     = Int_t((z*scale)*(b->GetArea()/maxarea));
-      xk    = b->GetXMin();
-      yk    = b->GetYMin();
-      xstep = b->GetXMax()-xk;
-      ystep = b->GetYMax()-yk;
+      k     = Int_t((z*scale)*(it->GetArea()/maxarea));
+      xk    = it->GetXMin();
+      yk    = it->GetYMin();
+      xstep = it->GetXMax()-xk;
+      ystep = it->GetYMax()-yk;
 
       // Paint the TGraph bins.
       if (poly->IsA() == TGraph::Class()) {
@@ -9560,28 +9563,27 @@ void THistPainter::PaintTH2PolyText(Option_t *)
    text.SetTextAngle(angle);
    text.TAttText::Modify();
 
-   TH2PolyBin *b;
+   TObject *poly;
 
-   TIter next(((TH2Poly*)fH)->GetBins());
-   TObject *obj, *p;
+   PolyBinIterator it(fH);
 
-   while ((obj=next())) {
-      b = (TH2PolyBin*)obj;
-      p = b->GetPolygon();
-      x = (b->GetXMin()+b->GetXMax())/2;
+   while (it->Next(poly, z)) {
+      //b = (TH2PolyBin*)obj;
+      //p = b->GetPolygon();
+      x = (it->GetXMin()+it->GetXMax())/2;
       if (Hoption.Logx) {
          if (x > 0)  x  = TMath::Log10(x);
          else continue;
       }
-      y = (b->GetYMin()+b->GetYMax())/2;
+      y = (it->GetYMin()+it->GetYMax())/2;
       if (Hoption.Logy) {
          if (y > 0)  y  = TMath::Log10(y);
          else continue;
       }
-      z = b->GetContent();
+      /*z = b->GetContent();*/
       if (z < Hparam.zmin || (z == 0 && !gStyle->GetHistMinimumZero()) ) continue;
       if (opt==2) {
-         e = fH->GetBinError(b->GetBinNumber());
+         e = fH->GetBinError(it->GetBinNumber());
          snprintf(format,32,"#splitline{%s%s}{#pm %s%s}",
                                     "%",gStyle->GetPaintTextFormat(),
                                     "%",gStyle->GetPaintTextFormat());
@@ -9589,7 +9591,7 @@ void THistPainter::PaintTH2PolyText(Option_t *)
       } else {
          snprintf(value,50,format,z);
       }
-      if (opt==3) text.PaintLatex(x,y,angle,0.02*fH->GetMarkerSize(),p->GetName());
+      if (opt==3) text.PaintLatex(x,y,angle,0.02*fH->GetMarkerSize(),poly->GetName());
       else        text.PaintLatex(x,y,angle,0.02*fH->GetMarkerSize(),value);
    }
 
@@ -11312,4 +11314,143 @@ void THistPainter::ShowProjection3(Int_t px, Int_t py)
    }
    c->Update();
    padsav->cd();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// PolyBinIterator helper class
+// POLY BIN ITERATOR CLASS TO SIMPLYFY ITERATION WHEN DEALING WITH NORMAL OR LITE POLY CLASSES
+
+PolyBinIterator::PolyBinIterator(TObject* hist)
+{
+	if (hist->InheritsFrom(TH2Poly::Class()))
+	{
+		next = TIter(((TH2Poly*)hist)->GetBins());
+		isRegularBin = kTrue;
+	}
+	else if (hist->InheritsFrom(TH2PolyLite::Class()))
+	{
+		liteBins = ((TH2PolyLite*)hist)->GetBins();
+		liteBinSize = liteBins->size();
+		isRegularBin = kFalse;
+	}
+}
+
+// Go to the next bin in the list, get its polygon and value
+
+Bool_t PolyBinIterator::Next(TObject* poly, Double_t& z)
+{
+	if (overflow) return kFalse;
+
+	if (isRegularBin)
+	{
+		TObject *obj = next();
+		if (obj)
+		{
+			b = (TH2PolyBin*)obj;
+			poly = b->GetPolygon();
+			z = b->GetContent();
+		}
+		else overflow = kTrue;
+	}
+	else
+	{
+		if (liteBinNum < liteBinSize)
+		{
+			Double_t ptX[5], ptY[5];
+			Int_t n = liteBins->at(liteBinNum)->BuildFullPolyDescription(ptX, ptY);
+
+			poly = new TGraph(n, ptX, ptY);
+			z = liteBins->at(liteBinNum)->GetContent();
+
+			++liteBinNum;
+		}
+		else overflow = kTrue;
+	}
+
+	return !overflow;
+}
+
+// Reset iterator position to the beginning
+
+void PolyBinIterator::Reset()
+{
+	if (b || liteBinNum)
+	{
+		if (isRegularBin) next.Reset();
+		else liteBinNum = 0;
+	}
+
+	overflow = kFalse;
+}
+
+// Get x-min of the current bin
+
+Double_t PolyBinIterator::GetXMin()
+{
+	if (!overflow && (b || liteBinNum))
+	{
+		if (isRegularBin) return b->GetXMin();
+		return liteBins->at(liteBinNum - 1)->GetXMin();
+	}
+	return -1111;
+}
+
+// Get x-max of the current bin
+
+Double_t PolyBinIterator::GetXMax()
+{
+	if (!overflow && (b || liteBinNum))
+	{
+		if (isRegularBin) return b->GetXMax();
+		return liteBins->at(liteBinNum - 1)->GetXMax();
+	}
+	return -1111;
+}
+
+// Get y-min of the current bin
+
+Double_t PolyBinIterator::GetYMin()
+{
+	if (!overflow && (b || liteBinNum))
+	{
+		if (isRegularBin) return b->GetYMin();
+		return liteBins->at(liteBinNum - 1)->GetYMin();
+	}
+	return -1111;
+}
+
+// Get y-max of the current bin
+
+Double_t PolyBinIterator::GetYMax()
+{
+	if (!overflow && (b || liteBinNum))
+	{
+		if (isRegularBin) return b->GetYMax();
+		return liteBins->at(liteBinNum - 1)->GetYMax();
+	}
+	return -1111;
+}
+
+// Get area of the current bin
+
+Double_t PolyBinIterator::GetArea()
+{
+	if (!overflow && (b || liteBinNum))
+	{
+		if (isRegularBin) return b->GetArea();
+		return liteBins->at(liteBinNum - 1)->GetArea();
+	}
+	return -1111;
+}
+
+// Get number(id) of the current bin
+
+Int_t PolyBinIterator::GetBinNumber()
+{
+	if (!overflow && (b || liteBinNum))
+	{
+		if (isRegularBin) return b->GetBinNumber();
+		return liteBins->at(liteBinNum - 1)->GetBinNumber();
+	}
+	return -1111;
 }

@@ -142,4 +142,35 @@ public:
    ClassDef(THistPainter,0)  //Helper class to draw histograms
 };
 
+// POLY BIN ITERATOR CLASS TO SIMPLYFY ITERATION WHEN DEALING WITH NORMAL OR LITE CLASSES
+
+class PolyBinIterator {
+public:
+	PolyBinIterator(TObject* hist);
+
+	Bool_t Next(TObject* poly, Double_t& z);
+	void Reset();
+
+	Double_t GetXMin();
+	Double_t GetXMax();
+	Double_t GetYMin();
+	Double_t GetYMax();
+
+	Double_t GetArea();
+	Int_t GetBinNumber();
+
+private:
+	Bool_t overflow{ kFalse };
+	Bool_t isRegularBin;
+
+	TIter next;
+	TH2Poly *b{ nullptr };
+
+	Int_t liteBinNum{ 0 };
+	Int_t liteBinSize{ 0 };
+	std::vector<TH2PolyBinLite*>* liteBins{ nullptr };
+
+	ClassDef(PolyBinIterator, 0)  //Helper class to draw histograms
+};
+
 #endif

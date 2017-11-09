@@ -20,6 +20,8 @@
 #pragma link C++ class THistPainter;
 #pragma link C++ class TPaletteAxis+;
 
+#pragma link C++ class PolyBinIterator+;
+
 // needed since new class definition of TGraph2DPainter
 #pragma extra_include "TGraph2D.h";
 #pragma extra_include "TGraphDelaunay.h";
