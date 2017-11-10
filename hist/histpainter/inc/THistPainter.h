@@ -147,6 +147,7 @@ public:
 class PolyBinIterator {
 public:
 	PolyBinIterator(TObject* hist);
+	virtual ~PolyBinIterator();
 
 	Bool_t Next(TObject* poly, Double_t& z);
 	void Reset();

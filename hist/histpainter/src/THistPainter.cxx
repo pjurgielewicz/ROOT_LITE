@@ -3170,7 +3170,9 @@ Int_t THistPainter::DistancetoPrimitive(Int_t px, Int_t py)
    //     if object is 2D or 3D return this object
    if (fH->GetDimension() == 2) {
       if (fH->InheritsFrom(TH2Poly::Class()) || fH->InheritsFrom(TH2PolyLite::Class())) {
-         //TH2Poly *th2 = ((fH->InheritsFrom(TH2Poly::Class())) ? (TH2Poly*)fH : (TH2PolyLite*)fH);
+		 
+		 Warning("DRAW", "THistPainter::DistancetoPrimitive");
+
          Double_t xmin, ymin, xmax, ymax;
          gPad->GetRangeAxis(xmin, ymin, xmax, ymax);
          Double_t pxu = gPad->AbsPixeltoX(px);
@@ -3245,6 +3247,9 @@ Int_t THistPainter::DistancetoPrimitive(Int_t px, Int_t py)
    }
    //     Loop on the list of associated functions and user objects
 FUNCTIONS:
+
+   Warning("DRAW", "THistPainter::DistancetoPrimitive::GOTO::FUNCTIONS");
+
    TObject *f;
    TIter   next(fFunctions);
    while ((f = (TObject*) next())) {
@@ -3637,6 +3642,9 @@ char *THistPainter::GetObjectInfo(Int_t px, Int_t py) const
                   th2->GetBinTitle(biny),x,y,biny,th2->GetBinContent(biny));
       }
       else if (fH->InheritsFrom(TH2PolyLite::Class())) {
+
+		  Warning("DRAW", "THistPainter::GetObjectInfo");
+
           TH2PolyLite *th2 = (TH2PolyLite*)fH;
           biny = th2->FindBin(x,y);
           snprintf(info,200,"BIN_ID=%g (x=%g, y=%g, bin=%d, binc=%g)",
@@ -9204,6 +9212,9 @@ void THistPainter::PaintTable(Option_t *option)
    } else {
       if (fH->InheritsFrom(TH2Poly::Class()) ||
           fH->InheritsFrom(TH2PolyLite::Class())) {
+
+		  Warning("DRAW", "THistPainter::PaintTable");
+
          if (Hoption.Fill)         PaintTH2PolyBins("f");
          if (Hoption.Color)        PaintTH2PolyColorLevels(option);
          if (Hoption.Scat)         PaintTH2PolyScatterPlot(option);
@@ -9264,6 +9275,8 @@ void THistPainter::PaintTable(Option_t *option)
 
 void THistPainter::PaintTH2PolyBins(Option_t *option)
 {
+
+	Warning("DRAW", "THistPainter::PaintTH2PolyBins");
 
    //Do not highlight the histogram, if its part was picked.
    if (gPad->PadInHighlightMode() && gPad->GetSelected() != fH) return;
@@ -9339,6 +9352,8 @@ void THistPainter::PaintTH2PolyBins(Option_t *option)
 
 void THistPainter::PaintTH2PolyColorLevels(Option_t *)
 {
+
+	Warning("DRAW", "THistPainter::PaintTH2PolyColorLevels");
 
    //Do not highlight the histogram, if its part was picked.
    if (gPad->PadInHighlightMode() && gPad->GetSelected() != fH)
@@ -9430,6 +9445,8 @@ void THistPainter::PaintTH2PolyColorLevels(Option_t *)
 
 void THistPainter::PaintTH2PolyScatterPlot(Option_t *)
 {
+
+	Warning("DRAW", "THistPainter::PaintTH2PolyScatterPlot");
 
    //Do not highlight the histogram, if its part was selected.
    if (gPad->PadInHighlightMode() && gPad->GetSelected() != fH)
@@ -9545,6 +9562,9 @@ void THistPainter::PaintTH2PolyScatterPlot(Option_t *)
 
 void THistPainter::PaintTH2PolyText(Option_t *)
 {
+
+	Warning("DRAW", "THistPainter::PaintTH2PolyText");
+
 
    TLatex text;
    text.SetTextFont(gStyle->GetTextFont());
@@ -11322,6 +11342,8 @@ void THistPainter::ShowProjection3(Int_t px, Int_t py)
 
 PolyBinIterator::PolyBinIterator(TObject* hist)
 {
+	Warning("DRAW", "PolyBinIterator::PolyBinIterator");
+
 	if (hist->InheritsFrom(TH2Poly::Class()))
 	{
         next = new TIter(((TH2Poly*)hist)->GetBins());
@@ -11335,11 +11357,18 @@ PolyBinIterator::PolyBinIterator(TObject* hist)
 	}
 }
 
+PolyBinIterator::~PolyBinIterator()
+{
+	if (next) delete next;
+}
+
 // Go to the next bin in the list, get its polygon and value
 
 Bool_t PolyBinIterator::Next(TObject* poly, Double_t& z)
 {
     if (overflow) return false;
+
+	Warning("DRAW", "PolyBinIterator::Next");
 
 	if (isRegularBin)
 	{
@@ -11374,6 +11403,9 @@ Bool_t PolyBinIterator::Next(TObject* poly, Double_t& z)
 
 void PolyBinIterator::Reset()
 {
+	
+	Warning("DRAW", "PolyBinIterator::Reset");
+
 	if (b || liteBinNum)
 	{
         if (isRegularBin) next->Reset();
@@ -11387,6 +11419,9 @@ void PolyBinIterator::Reset()
 
 Double_t PolyBinIterator::GetXMin()
 {
+
+	Warning("DRAW", "PolyBinIterator::GetXMin");
+
 	if (!overflow && (b || liteBinNum))
 	{
 		if (isRegularBin) return b->GetXMin();
@@ -11399,6 +11434,8 @@ Double_t PolyBinIterator::GetXMin()
 
 Double_t PolyBinIterator::GetXMax()
 {
+	Warning("DRAW", "PolyBinIterator::GetXMax");
+
 	if (!overflow && (b || liteBinNum))
 	{
 		if (isRegularBin) return b->GetXMax();
@@ -11411,6 +11448,9 @@ Double_t PolyBinIterator::GetXMax()
 
 Double_t PolyBinIterator::GetYMin()
 {
+
+	Warning("DRAW", "PolyBinIterator::GetYMin");
+
 	if (!overflow && (b || liteBinNum))
 	{
 		if (isRegularBin) return b->GetYMin();
@@ -11423,6 +11463,9 @@ Double_t PolyBinIterator::GetYMin()
 
 Double_t PolyBinIterator::GetYMax()
 {
+	
+	Warning("DRAW", "PolyBinIterator::GetYMax");
+
 	if (!overflow && (b || liteBinNum))
 	{
 		if (isRegularBin) return b->GetYMax();
@@ -11435,6 +11478,9 @@ Double_t PolyBinIterator::GetYMax()
 
 Double_t PolyBinIterator::GetArea()
 {
+
+	Warning("DRAW", "PolyBinIterator::GetArea");
+
 	if (!overflow && (b || liteBinNum))
 	{
 		if (isRegularBin) return b->GetArea();
@@ -11447,6 +11493,9 @@ Double_t PolyBinIterator::GetArea()
 
 Int_t PolyBinIterator::GetBinNumber()
 {
+
+	Warning("DRAW", "PolyBinIterator::GetBinNumber");
+
 	if (!overflow && (b || liteBinNum))
 	{
 		if (isRegularBin) return b->GetBinNumber();
