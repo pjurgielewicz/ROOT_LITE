@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 /// Normal constructor.
 
-TH2PolyBinLite::TH2PolyBinLite(Int_t nVerts, Double_t* x, Double32_t* y, Int_t bin_number) : nVerts(nVerts)
+TH2PolyBinLite::TH2PolyBinLite(Int_t nVerts, const Double_t* x, const Double_t* y, Int_t bin_number) : nVerts(nVerts)
 {
 	x = new Double_t[nVerts];
 	y = new Double_t[nVerts];
@@ -59,14 +59,14 @@ Double_t TH2PolyBinLite::GetDet()
 	Double_t v1y = y[1] - y[0];
 	Double_t v2y = y[2] - y[0];
 
-	return v1x * v2y - v1y * v2x
+	return v1x * v2y - v1y * v2x;
 }
 
 Double_t TH2PolyBinLite::GetArea()
 {
 	if (nVerts == 2)
 	{
-        return std::fabs((x[1] - x[0]) * (y[1] - y[0]))
+		return std::fabs((x[1] - x[0]) * (y[1] - y[0]));
 	}
 	else if (nVerts == 3)
 	{
@@ -157,7 +157,7 @@ Int_t TH2PolyBinLite::BuildFullPolyDescription(Double_t *x, Double_t *y)
 ////////////////////////////////////////////////////////////////////////////////
 /// Return "true" if the point (x,y) is inside the bin.
 
-Bool_t TH2PolyBinLite::IsInside(Double_t x, Double_t y) const
+Bool_t TH2PolyBinLite::IsInside(Double_t x, Double_t y)
 {
 	Int_t in = 0;
 
@@ -171,8 +171,11 @@ Bool_t TH2PolyBinLite::IsInside(Double_t x, Double_t y) const
 	{
 		Double_t detInv = 1. / GetDet();
 
-		Double_t l1 = ((y[1] - y[2]) * (x - x[2]) + (x[2] - x[1]) * (y - y[2])) * detInv;
-		Double_t l2 = ((y[2] - y[0]) * (x - x[2]) + (x[0] - x[2]) * (y - y[2])) * detInv;
+		Double_t l1 = ((this->y[1] - this->y[2]) * (x - this->x[2]) +
+			(this->x[2] - this->x[1]) * (y - this->y[2])) * detInv;
+
+		Double_t l2 = ((this->y[2] - this->y[0]) * (x - this->x[2]) +
+			(this->x[0] - this->x[2]) * (y - this->y[2])) * detInv;
 
 		in = (l1 > 0.0 && l2 > 0.0 && l1 + l2 < 1.0) ? 1 : 0;
 	}

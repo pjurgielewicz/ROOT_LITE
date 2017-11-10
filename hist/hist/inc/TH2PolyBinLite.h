@@ -21,6 +21,7 @@ Helper class to represent a bin in the TH2PolyLite histogram
 */
 
 class TH2PolyBinLite {
+public:
 	// LITE VERSION OF THE CLASS THAT CAN HANDLE TRIANGLES AND RECTANGLES ONLY
 	// BINS ARE ANONYMOUS (DO NOT HAVE TITLE, NAME USW.) JUST ITS ID (INT)
 	TH2PolyBinLite(Int_t nVerts, Double_t* x, Double32_t* y, Int_t bin_number);
@@ -46,7 +47,7 @@ class TH2PolyBinLite {
 
     Int_t     BuildFullPolyDescription(Double_t *x, Double_t *y);
 
-	Bool_t    IsInside(Double_t x, Double_t y) const;
+	Bool_t    IsInside(Double_t x, Double_t y);
 	void      SetChanged(Bool_t flag) { fChanged = flag; }
 	void      SetContent(Double_t content) { fContent = content; SetChanged(true); }
 
