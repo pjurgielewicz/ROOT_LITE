@@ -193,7 +193,7 @@ Int_t TH2PolyLite::AddBin(Int_t n, const Double_t *x, const Double_t *y)
 {
 	if (fBins == 0) {
 		fBins = new std::vector<TH2PolyBinLite*>();
-		fBins->SetOwner();
+//		fBins->SetOwner();
 	}
 	fNcells++;
 	TH2PolyBinLite *bin = new TH2PolyBinLite(n, x, y, fNcells);
@@ -972,7 +972,7 @@ Bool_t TH2PolyLite::IsIntersecting(TH2PolyBinLite *bin,
 	Bool_t inter = kFALSE;
 
      Double_t ptX[5], ptY[5];
-     Int_t gn = bin->BuildFullPolygonDescription(ptX, ptY);
+     Int_t gn = bin->BuildFullPolyDescription(ptX, ptY);
 
      if (gn) inter = IsIntersectingPolygon(gn, ptX, ptY, xclipl, xclipr, yclipb, yclipt);
 
@@ -1158,9 +1158,9 @@ void TH2PolyLite::SavePrimitive(std::ostream &out, Option_t *option)
 		auto y = bin->GetYList();
 		out << hname << "->AddBin(" << bin->GetNVerts() + ", {";
 		for (int i = 0; i < n; ++i)
-			out << x[i] + ((i < n - 1) ? ", " : "}, {");
+            out << x[i] << ((i < n - 1) ? ", " : "}, {");
 		for (int i = 0; i < n; ++i)
-			out << y[i] << ((i < n - 1) ? ", " : "});") << std::endl;
+            out << y[i] << ((i < n - 1) ? ", " : "});") << std::endl;
 	}
 
 	// save bin contents

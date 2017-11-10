@@ -3179,7 +3179,7 @@ Int_t THistPainter::DistancetoPrimitive(Int_t px, Int_t py)
             curdist = big;
             goto FUNCTIONS;
          } else {
-            Int_t bin = ((fH->InheritsFrom(TH2Poly::Class())) ? (TH2Poly*)fH : (TH2PolyLite*)fH)->FindBin(pxu, pyu);//th2->FindBin(pxu, pyu);
+            Int_t bin = (fH->InheritsFrom(TH2Poly::Class())) ? ((TH2Poly*)fH)->FindBin(pxu, pyu) : ((TH2PolyLite*)fH)->FindBin(pxu, pyu);//th2->FindBin(pxu, pyu);
             if (bin>0) curdist = 1;
             else       curdist = big;
             goto FUNCTIONS;
@@ -9280,9 +9280,9 @@ void THistPainter::PaintTH2PolyBins(Option_t *option)
     Double_t z;
     TObject *poly;
 
-	PolyBinIterator it(fH);
+    PolyBinIterator it(fH);
 
-    while (it->Next(poly, z)) {
+    while (it.Next(poly, z)) {
         //b = (TH2PolyBin*)obj;
         //z = b->GetContent();
         if (z==0 && Hoption.Zero) continue; // Do not draw empty bins in case of option "COL0 L"
@@ -9373,7 +9373,7 @@ void THistPainter::PaintTH2PolyColorLevels(Option_t *)
    TObject *poly;
    PolyBinIterator it(fH);
 
-   while (it->Next(poly, z)) {
+   while (it.Next(poly, z)) {
       if (z==0 && Hoption.Zero) continue;
       if (Hoption.Logz) {
          if (z > 0) z = TMath::Log10(z);
@@ -9466,15 +9466,15 @@ void THistPainter::PaintTH2PolyScatterPlot(Option_t *)
    PolyBinIterator it(fH);							
 
    Double_t maxarea = 0, a;
-   while (it->Next(poly, z)) {
-      a = it->GetArea();
+   while (it.Next(poly, z)) {
+      a = it.GetArea();
       if (a>maxarea) maxarea = a;
    }
 
    //next.Reset();
    it.Reset();
 
-   while (it->Next(poly, z)) {
+   while (it.Next(poly, z)) {
       //b     = (TH2PolyBin*)obj;
       //poly  = b->GetPolygon();
       //z     = b->GetContent();
@@ -9485,11 +9485,11 @@ void THistPainter::PaintTH2PolyScatterPlot(Option_t *)
       } else {
          z    -=  zmin;
       }
-      k     = Int_t((z*scale)*(it->GetArea()/maxarea));
-      xk    = it->GetXMin();
-      yk    = it->GetYMin();
-      xstep = it->GetXMax()-xk;
-      ystep = it->GetYMax()-yk;
+      k     = Int_t((z*scale)*(it.GetArea()/maxarea));
+      xk    = it.GetXMin();
+      yk    = it.GetYMin();
+      xstep = it.GetXMax()-xk;
+      ystep = it.GetYMax()-yk;
 
       // Paint the TGraph bins.
       if (poly->IsA() == TGraph::Class()) {
@@ -9567,15 +9567,15 @@ void THistPainter::PaintTH2PolyText(Option_t *)
 
    PolyBinIterator it(fH);
 
-   while (it->Next(poly, z)) {
+   while (it.Next(poly, z)) {
       //b = (TH2PolyBin*)obj;
       //p = b->GetPolygon();
-      x = (it->GetXMin()+it->GetXMax())/2;
+      x = (it.GetXMin()+it.GetXMax())/2;
       if (Hoption.Logx) {
          if (x > 0)  x  = TMath::Log10(x);
          else continue;
       }
-      y = (it->GetYMin()+it->GetYMax())/2;
+      y = (it.GetYMin()+it.GetYMax())/2;
       if (Hoption.Logy) {
          if (y > 0)  y  = TMath::Log10(y);
          else continue;
@@ -9583,7 +9583,7 @@ void THistPainter::PaintTH2PolyText(Option_t *)
       /*z = b->GetContent();*/
       if (z < Hparam.zmin || (z == 0 && !gStyle->GetHistMinimumZero()) ) continue;
       if (opt==2) {
-         e = fH->GetBinError(it->GetBinNumber());
+         e = fH->GetBinError(it.GetBinNumber());
          snprintf(format,32,"#splitline{%s%s}{#pm %s%s}",
                                     "%",gStyle->GetPaintTextFormat(),
                                     "%",gStyle->GetPaintTextFormat());
@@ -11324,14 +11324,14 @@ PolyBinIterator::PolyBinIterator(TObject* hist)
 {
 	if (hist->InheritsFrom(TH2Poly::Class()))
 	{
-		next = TIter(((TH2Poly*)hist)->GetBins());
-		isRegularBin = kTrue;
+        next = new TIter(((TH2Poly*)hist)->GetBins());
+        isRegularBin = true;
 	}
 	else if (hist->InheritsFrom(TH2PolyLite::Class()))
 	{
 		liteBins = ((TH2PolyLite*)hist)->GetBins();
 		liteBinSize = liteBins->size();
-		isRegularBin = kFalse;
+        isRegularBin = false;
 	}
 }
 
@@ -11339,18 +11339,18 @@ PolyBinIterator::PolyBinIterator(TObject* hist)
 
 Bool_t PolyBinIterator::Next(TObject* poly, Double_t& z)
 {
-	if (overflow) return kFalse;
+    if (overflow) return false;
 
 	if (isRegularBin)
 	{
-		TObject *obj = next();
+        TObject *obj = (*next)();
 		if (obj)
 		{
 			b = (TH2PolyBin*)obj;
 			poly = b->GetPolygon();
 			z = b->GetContent();
 		}
-		else overflow = kTrue;
+        else overflow = true;
 	}
 	else
 	{
@@ -11364,7 +11364,7 @@ Bool_t PolyBinIterator::Next(TObject* poly, Double_t& z)
 
 			++liteBinNum;
 		}
-		else overflow = kTrue;
+        else overflow = true;
 	}
 
 	return !overflow;
@@ -11376,11 +11376,11 @@ void PolyBinIterator::Reset()
 {
 	if (b || liteBinNum)
 	{
-		if (isRegularBin) next.Reset();
+        if (isRegularBin) next->Reset();
 		else liteBinNum = 0;
 	}
 
-	overflow = kFalse;
+    overflow = true;
 }
 
 // Get x-min of the current bin
