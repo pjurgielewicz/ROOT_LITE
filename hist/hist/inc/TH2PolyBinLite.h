@@ -13,6 +13,8 @@
 #include "TH2.h"
 #endif
 
+#include <algorithm>
+
 /** \class TH2PolyBinLite
 \ingroup Hist
 Helper class to represent a bin in the TH2PolyLite histogram

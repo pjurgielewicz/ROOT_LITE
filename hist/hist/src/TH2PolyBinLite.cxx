@@ -19,8 +19,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 /// Normal constructor.
 
-TH2PolyBinLite::TH2PolyBinLite(Int_t nVerts, Double_t* x, Double32_t* y, Int_t bin_number) : nVerts(nVerts), x(x), y(y)
+TH2PolyBinLite::TH2PolyBinLite(Int_t nVerts, Double_t* x, Double32_t* y, Int_t bin_number) : nVerts(nVerts)
 {
+	x = new Double_t[nVerts];
+	y = new Double_t[nVerts];
+
+	std::copy(x, x + nVerts, this->x);
+	std::copy(y, y + nVerts, this->y);
+
 	fContent = 0.;
 	fNumber = bin_number;
 	fArea = 0.;

@@ -106,7 +106,10 @@ void SetupPlots(TProfile2Poly* TP2P_2, TProfile2Poly* TP2P, TProfile2D* TP2D_2, 
    for (double i = minx; i < maxx; i += binsz) {
       for (double j = miny; j < maxy; j += binsz) {
          TP2P->AddBin(i, j, i + binsz, j + binsz);
-         TP2P_2->AddBin(i, j, i + binsz, j + binsz);
+
+		 Double_t x[] = { i, i + binsz };
+		 Double_t y[] = { j, j + binsz };
+         TP2P_2->AddBin(2, x, y);
       }
    }
 

@@ -45,8 +45,7 @@ public:
 	virtual ~TH2PolyLite();
 
 	Int_t        AddBin(Int_t n, const Double_t *x, const Double_t *y);
-	//Int_t        AddBin(Int_t n, const Double_t *x, const Double_t *y);
-	//Int_t        AddBin(Double_t x1, Double_t y1, Double_t x2, Double_t  y2);
+	Int_t        AddBin(Double_t x1, Double_t y1, Double_t x2, Double_t  y2);
 	virtual Bool_t Add(const TH1 *h1, Double_t c1);
 	virtual Bool_t Add(const TH1 *h1, const TH1 *h2, Double_t c1 = 1, Double_t c2 = 1);
 	virtual Bool_t Add(TF1 *h1, Double_t c1 = 1, Option_t *option = "");
@@ -111,6 +110,7 @@ protected:
 	Bool_t   fNewBinAdded;       //!For the 3D Painter
 	Bool_t   fBinContentChanged; //!For the 3D Painter
 
+	Int_t  InsertBin(Int_t n, const Double_t *x, const Double_t *y);
 	void   AddBinToPartition(TH2PolyBinLite *bin);  // Adds the input bin into the partition matrix
 	void   Initialize(Double_t xlow, Double_t xup, Double_t ylow, Double_t yup, Int_t n, Int_t m);
 	Bool_t IsIntersecting(TH2PolyBinLite *bin, Double_t xclipl, Double_t xclipr, Double_t yclipb, Double_t yclipt);								

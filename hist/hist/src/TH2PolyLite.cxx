@@ -189,7 +189,7 @@ TH2PolyLite::~TH2PolyLite()
 /// it failed to add. To allow the histogram limits to expand when a bin
 /// outside the limits is added, call SetFloat() before adding the bin.
 
-Int_t TH2PolyLite::AddBin(Int_t n, const Double_t *x, const Double_t *y)
+Int_t TH2PolyLite::InsertBin(Int_t n, const Double_t *x, const Double_t *y)
 {
 	if (fBins == 0) {
 		fBins = new std::vector<TH2PolyBinLite*>();
@@ -233,30 +233,29 @@ Int_t TH2PolyLite::AddBin(Int_t n, const Double_t *x, const Double_t *y)
 	return fNcells;
 }
 
-//////////////////////////////////////////////////////////////////////////////////
-///// Adds a new bin to the histogram. The number of vertices and their (x,y)
-///// coordinates are required as input. It returns the bin number in the
-///// histogram.
-//
-//Int_t TH2PolyLite::AddBin(Int_t n, const Double_t *x, const Double_t *y)
-//{
-//	TGraph *g = new TGraph(n, x, y);
-//	Int_t bin = AddBin(g);
-//	return bin;
-//}
-//
-//////////////////////////////////////////////////////////////////////////////////
-///// Add a new bin to the histogram. The bin shape is a rectangle.
-///// It returns the bin number of the bin in the histogram.
-//
-//Int_t TH2PolyLite::AddBin(Double_t x1, Double_t y1, Double_t x2, Double_t  y2)
-//{
-//	Double_t x[] = { x1, x1, x2, x2, x1 };
-//	Double_t y[] = { y1, y2, y2, y1, y1 };
-//	TGraph *g = new TGraph(5, x, y);
-//	Int_t bin = AddBin(g);
-//	return bin;
-//}
+////////////////////////////////////////////////////////////////////////////////
+/// Adds a new bin to the histogram. The number of vertices and their (x,y)
+/// coordinates are required as input. It returns the bin number in the
+/// histogram.
+
+Int_t TH2PolyLite::AddBin(Int_t n, const Double_t *x, const Double_t *y)
+{
+	Int_t bin = InsertBin(n, x, y);
+	return bin;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Add a new bin to the histogram. The bin shape is a rectangle.
+/// It returns the bin number of the bin in the histogram.
+
+Int_t TH2PolyLite::AddBin(Double_t x1, Double_t y1, Double_t x2, Double_t  y2)
+{
+	Double_t xNew[] = { x1, x2 };
+	Double_t yNew[] = { y1, y2 };
+
+	Int_t bin = InsertBin(2, xNew, yNew);
+	return bin;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Performs the operation: this = this + c1*h1.
