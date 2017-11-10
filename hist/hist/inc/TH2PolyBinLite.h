@@ -24,7 +24,7 @@ class TH2PolyBinLite {
 public:
 	// LITE VERSION OF THE CLASS THAT CAN HANDLE TRIANGLES AND RECTANGLES ONLY
 	// BINS ARE ANONYMOUS (DO NOT HAVE TITLE, NAME USW.) JUST ITS ID (INT)
-	TH2PolyBinLite(Int_t nVerts, Double_t* x, Double32_t* y, Int_t bin_number);
+	TH2PolyBinLite(Int_t nVerts, const Double_t* x, const Double_t* y, Int_t bin_number);
 	virtual ~TH2PolyBinLite();
 
 	void      ClearContent() { fContent = 0; }
@@ -71,3 +71,4 @@ private:
 
 	ClassDef(TH2PolyBinLite, 1)  //2-Dim polygon bins
 };
+#endif
