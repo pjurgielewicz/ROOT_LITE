@@ -4,11 +4,14 @@
 #include "TH2Poly.h"
 #include "TH2PolyLite.h"
 
-#include "gtest/gtest.h"
+//#include "gtest/gtest.h"
 
 #include <algorithm>
+#include <cmath>
 
 using namespace std;
+
+#define ASSERT_NEAR(x1, x2, delta) (assert(std::fabs(x1 - x2) < delta))
 
 Float_t delta = 0.00000000001;
 
@@ -79,6 +82,11 @@ void test_globalStats() {
 
 // ------------ TEST CALLS ------------
 
-TEST(TProfile2Poly, GlobalCompare) {
+//TEST(TProfile2Poly, GlobalCompare) {
+//	test_globalStats();
+//}
+
+void testMain()
+{
 	test_globalStats();
 }
